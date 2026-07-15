@@ -1,0 +1,26 @@
+---
+browser_homepage: "https://www.softage.net"
+
+browser_disable_private: true
+
+browser_disable_devtools: true
+
+browser_disable_password_save: true
+
+browser_bookmarks:
+  - name: "SoftAge Portal"
+    url: "https://www.softage.net"
+
+browser_blocked_urls:
+  - "facebook.com"
+  - "instagram.com"
+
+browser_allowed_urls:
+  - "softage.net"
+  - "softage.ai"
+
+proxy_enabled: false
+
+proxy_http: ""
+proxy_https: ""
+proxy_no_proxy: ""
