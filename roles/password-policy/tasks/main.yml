@@ -1,0 +1,22 @@
+---
+- name: Ensure pam_pwquality present
+  ansible.builtin.apt:
+    name: libpam-pwquality
+    state: present
+    update_cache: true
+
+- name: Configure password quality
+  ansible.builtin.template:
+    src: pwquality.conf.j2
+    dest: /etc/security/pwquality.conf
+    mode: "0644"
+
+- name: Configure login.defs aging
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: "^{{ item.key }}"
+    line: "{{ item.key }}\t{{ item.value }}"
+  loop:
+    - {key: "PASS_MAX_DAYS", value: "{{ password_max_days }}"}
+    - {key: "PASS_MIN_DAYS", value: "{{ password_min_days }}"}
+    - {key: "PASS_WARN_AGE", value: "{{ password_warn_days }}"}

@@ -1,0 +1,14 @@
+---
+- name: Ensure openssh-server present
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+    update_cache: true
+
+- name: Deploy hardened sshd drop-in
+  ansible.builtin.template:
+    src: 99-softage.conf.j2
+    dest: /etc/ssh/sshd_config.d/99-softage.conf
+    mode: "0644"
+    validate: "/usr/sbin/sshd -t -f %s"
+  notify: restart sshd

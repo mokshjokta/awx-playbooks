@@ -1,0 +1,12 @@
+---
+- name: Ensure Edge managed policy dir exists
+  ansible.builtin.file:
+    path: /etc/opt/edge/policies/managed
+    state: directory
+    mode: "0755"
+
+- name: Deploy Edge managed policy
+  ansible.builtin.template:
+    src: edge-policy.json.j2
+    dest: /etc/opt/edge/policies/managed/softage.json
+    mode: "0644"

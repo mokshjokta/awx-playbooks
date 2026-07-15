@@ -1,0 +1,111 @@
+---
+- name: Ensure compliance report dir exists
+  ansible.builtin.file:
+    path: "{{ compliance_report_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Gather firewall status
+  ansible.builtin.command: ufw status
+  register: c_ufw
+  changed_when: false
+  failed_when: false
+
+- name: Gather domain membership
+  ansible.builtin.command: realm list
+  register: c_realm
+  changed_when: false
+  failed_when: false
+
+- name: Check disk encryption (LUKS)
+  ansible.builtin.shell: "lsblk -o TYPE | grep -q crypt && echo yes || echo no"
+  register: c_luks
+  changed_when: false
+
+- name: Check usb-storage blacklist
+  ansible.builtin.stat:
+    path: /etc/modprobe.d/blacklist-usb-storage.conf
+  register: c_usb
+
+- name: Check bluetooth masked
+  ansible.builtin.command: systemctl is-enabled bluetooth
+  register: c_bt
+  changed_when: false
+  failed_when: false
+
+- name: Check wallpaper policy applied
+  ansible.builtin.stat:
+    path: /etc/dconf/db/local.d/00-wallpaper
+  register: c_wall
+
+- name: Check firefox policy applied
+  ansible.builtin.stat:
+    path: /etc/firefox/policies/policies.json
+  register: c_ff
+
+- name: Check antivirus present
+  ansible.builtin.command: which clamscan
+  register: c_av
+  changed_when: false
+  failed_when: false
+
+- name: Check reboot required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: c_reboot
+
+- name: Build compliance report
+  ansible.builtin.set_fact:
+    compliance_report:
+      hostname: "{{ ansible_hostname }}"
+      machine_name: "{{ ansible_hostname }}"
+      serial_number: "{{ ansible_product_serial | default('unknown') }}"
+      ram_mb: "{{ ansible_memtotal_mb }}"
+      cpu_cores: "{{ ansible_processor_vcpus }}"
+      disk_total_gb: "{{ (ansible_mounts | selectattr('mount','equalto','/') | map(attribute='size_total') | first | default(0) / 1073741824) | round(1) }}"
+      disk_used_pct: "{{ ((1 - (ansible_mounts | selectattr('mount','equalto','/') | map(attribute='size_available') | first | default(1)) / (ansible_mounts | selectattr('mount','equalto','/') | map(attribute='size_total') | first | default(1))) * 100) | round(1) }}"
+      os_version: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+      kernel: "{{ ansible_kernel }}"
+      firewall_active: "{{ 'active' in c_ufw.stdout }}"
+      antivirus_installed: "{{ c_av.rc == 0 }}"
+      domain_joined: "{{ ad_domain in c_realm.stdout }}"
+      encryption_enabled: "{{ c_luks.stdout == 'yes' }}"
+      usb_blocked: "{{ c_usb.stat.exists }}"
+      bluetooth_enabled: "{{ 'enabled' in c_bt.stdout }}"
+      wallpaper_applied: "{{ c_wall.stat.exists }}"
+      firefox_policy_applied: "{{ c_ff.stat.exists }}"
+      reboot_required: "{{ c_reboot.stat.exists }}"
+      report_time: "{{ ansible_date_time.iso8601 }}"
+
+- name: Compute compliance score
+  ansible.builtin.set_fact:
+    compliance_score: >-
+      {{ ([compliance_report.firewall_active,
+           compliance_report.antivirus_installed,
+           compliance_report.domain_joined,
+           compliance_report.usb_blocked,
+           compliance_report.wallpaper_applied,
+           compliance_report.firefox_policy_applied,
+           not compliance_report.bluetooth_enabled]
+          | select | list | length) * 100
+         / 7 | round(0, 'common') }}
+
+- name: Write compliance report JSON locally
+  ansible.builtin.copy:
+    content: "{{ compliance_report | combine({'compliance_score': compliance_score}) | to_nice_json }}"
+    dest: "{{ compliance_report_dir }}/report.json"
+    mode: "0644"
+
+- name: Show compliance summary in job output (visible in AWX)
+  ansible.builtin.debug:
+    msg: "{{ compliance_report | combine({'compliance_score': compliance_score}) }}"
+
+- name: POST report to central endpoint (optional)
+  ansible.builtin.uri:
+    url: "{{ compliance_report_endpoint }}"
+    method: POST
+    body_format: json
+    body: "{{ compliance_report | combine({'compliance_score': compliance_score}) }}"
+    status_code: [200, 201, 202, 204]
+  when: compliance_report_endpoint | length > 0
+  failed_when: false

@@ -1,0 +1,46 @@
+{
+  "policies": {
+    "Homepage": {
+      "URL": "{{ browser_homepage }}",
+      "Locked": true,
+      "StartPage": "homepage"
+    },
+    "DisablePrivateBrowsing": {{ browser_disable_private | lower }},
+    "DisableDeveloperTools": {{ browser_disable_devtools | lower }},
+    "OfferToSaveLogins": {{ (not browser_disable_password_save) | lower }},
+    "PasswordManagerEnabled": {{ (not browser_disable_password_save) | lower }},
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "Bookmarks": [
+{% for bm in browser_bookmarks %}
+      {"Title": "{{ bm.name }}", "URL": "{{ bm.url }}", "Placement": "toolbar"}{{ "," if not loop.last else "" }}
+{% endfor %}
+    ],
+    "WebsiteFilter": {
+      "Block": [
+{% for u in browser_blocked_urls %}
+        "*://*{{ u }}/*"{{ "," if not loop.last else "" }}
+{% endfor %}
+      ],
+      "Exceptions": [
+{% for u in browser_allowed_urls %}
+        "*://*{{ u }}/*"{{ "," if not loop.last else "" }}
+{% endfor %}
+      ]
+    },
+    "Certificates": {
+      "ImportEnterpriseRoots": true
+    },
+    "Proxy": {
+{% if proxy_enabled %}
+      "Mode": "manual",
+      "HTTPProxy": "{{ proxy_http | regex_replace('^https?://','') }}",
+      "SSLProxy": "{{ proxy_https | regex_replace('^https?://','') }}",
+      "Passthrough": "{{ proxy_no_proxy }}",
+      "Locked": true
+{% else %}
+      "Mode": "system"
+{% endif %}
+    }
+  }
+}

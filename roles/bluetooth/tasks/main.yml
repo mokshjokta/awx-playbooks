@@ -1,0 +1,27 @@
+---
+- name: Disable and stop bluetooth service
+  ansible.builtin.systemd:
+    name: bluetooth
+    state: stopped
+    enabled: false
+    masked: true
+  when: block_bluetooth | bool
+  failed_when: false
+
+- name: Blacklist bluetooth kernel modules
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/blacklist-bluetooth.conf
+    content: |
+      blacklist btusb
+      blacklist bluetooth
+    mode: "0644"
+  when: block_bluetooth | bool
+  notify: rebuild initramfs
+
+- name: Re-enable bluetooth if policy disabled
+  ansible.builtin.systemd:
+    name: bluetooth
+    enabled: true
+    masked: false
+  when: not (block_bluetooth | bool)
+  failed_when: false

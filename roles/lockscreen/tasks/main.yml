@@ -1,0 +1,30 @@
+---
+- name: Ensure lockscreen background dir exists
+  ansible.builtin.file:
+    path: "/usr/share/backgrounds/{{ company_short }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy lockscreen image
+  ansible.builtin.copy:
+    src: "{{ lockscreen_source | basename }}"
+    dest: "/usr/share/backgrounds/{{ company_short }}/lockscreen.png"
+    mode: "0644"
+  notify: dconf update
+
+- name: Configure GDM/screensaver lock background
+  ansible.builtin.template:
+    src: 00-lockscreen.j2
+    dest: /etc/dconf/db/local.d/00-lockscreen
+    mode: "0644"
+  notify: dconf update
+
+- name: Lock screensaver keys
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/local.d/locks/00-lockscreen
+    content: |
+      /org/gnome/desktop/screensaver/picture-uri
+      /org/gnome/desktop/screensaver/lock-enabled
+    mode: "0644"
+  when: desktop_lock_lockscreen | default(true)
+  notify: dconf update

@@ -1,0 +1,17 @@
+---
+- name: Configure idle lock + auto logout keyfile
+  ansible.builtin.template:
+    src: 00-idle.j2
+    dest: /etc/dconf/db/local.d/00-idle
+    mode: "0644"
+  notify: dconf update
+
+- name: Lock idle/session keys
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/local.d/locks/00-idle
+    content: |
+      /org/gnome/desktop/session/idle-delay
+      /org/gnome/desktop/screensaver/lock-delay
+      /org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-timeout
+    mode: "0644"
+  notify: dconf update

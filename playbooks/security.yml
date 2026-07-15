@@ -1,0 +1,17 @@
+---
+# Security baseline for Ubuntu workstations.
+- name: Apply security baseline
+  hosts: workstations
+  become: true
+  roles:
+    - password-policy
+    - idle-lock
+    - usb
+    - bluetooth
+    - firewall
+    - ssh
+    - sudo
+    - login-banner
+    - antivirus
+    - audit
+    - certificates

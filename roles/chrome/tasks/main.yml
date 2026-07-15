@@ -1,0 +1,12 @@
+---
+- name: Ensure Chrome managed policy dir exists
+  ansible.builtin.file:
+    path: /etc/opt/chrome/policies/managed
+    state: directory
+    mode: "0755"
+
+- name: Deploy Chrome managed policy
+  ansible.builtin.template:
+    src: chrome-policy.json.j2
+    dest: /etc/opt/chrome/policies/managed/softage.json
+    mode: "0644"

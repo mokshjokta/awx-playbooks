@@ -1,0 +1,30 @@
+---
+- name: Ensure rsyslog installed
+  ansible.builtin.apt:
+    name: rsyslog
+    state: present
+    update_cache: true
+
+- name: Configure persistent journald
+  ansible.builtin.copy:
+    dest: /etc/systemd/journald.conf.d/softage.conf
+    content: |
+      [Journal]
+      Storage=persistent
+      SystemMaxUse=500M
+    mode: "0644"
+  notify: restart journald
+
+- name: Ensure journald drop-in dir
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Configure remote syslog forwarding
+  ansible.builtin.template:
+    src: 60-remote.conf.j2
+    dest: /etc/rsyslog.d/60-remote.conf
+    mode: "0644"
+  when: remote_syslog_enabled | bool
+  notify: restart rsyslog

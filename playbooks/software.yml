@@ -1,0 +1,9 @@
+---
+# Install allowed software and remove blocked software.
+- name: Manage software inventory
+  hosts: workstations
+  become: true
+  roles:
+    - packages
+    - software
+    - updates

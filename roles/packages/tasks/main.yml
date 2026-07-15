@@ -1,0 +1,16 @@
+---
+# Baseline packages every workstation should have.
+- name: Install baseline utilities
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - vim
+      - htop
+      - net-tools
+      - gnupg
+      - apt-transport-https
+      - ca-certificates
+      - unzip
+    state: present
+    update_cache: true

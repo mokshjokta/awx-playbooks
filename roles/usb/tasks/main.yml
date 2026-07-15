@@ -1,0 +1,25 @@
+---
+- name: Block USB mass storage (modprobe)
+  ansible.builtin.copy:
+    dest: /etc/modprobe.d/blacklist-usb-storage.conf
+    content: |
+      install usb-storage /bin/false
+      blacklist usb-storage
+      blacklist uas
+    mode: "0644"
+  when: block_usb_storage | bool
+  notify: rebuild initramfs
+
+- name: Remove USB block if disabled
+  ansible.builtin.file:
+    path: /etc/modprobe.d/blacklist-usb-storage.conf
+    state: absent
+  when: not (block_usb_storage | bool)
+  notify: rebuild initramfs
+
+- name: Unload usb-storage module now (best effort)
+  community.general.modprobe:
+    name: usb-storage
+    state: absent
+  when: block_usb_storage | bool
+  failed_when: false

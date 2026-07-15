@@ -1,0 +1,35 @@
+---
+- name: Configure system-wide proxy in /etc/environment
+  ansible.builtin.blockinfile:
+    path: /etc/environment
+    marker: "# {mark} ANSIBLE MANAGED PROXY"
+    block: |
+      http_proxy="{{ proxy_http }}"
+      https_proxy="{{ proxy_https }}"
+      HTTP_PROXY="{{ proxy_http }}"
+      HTTPS_PROXY="{{ proxy_https }}"
+      no_proxy="{{ proxy_no_proxy }}"
+      NO_PROXY="{{ proxy_no_proxy }}"
+  when: proxy_enabled | bool
+
+- name: Configure apt proxy
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/95proxy
+    content: |
+      Acquire::http::Proxy "{{ proxy_http }}";
+      Acquire::https::Proxy "{{ proxy_https }}";
+    mode: "0644"
+  when: proxy_enabled | bool
+
+- name: Remove proxy config when disabled
+  ansible.builtin.file:
+    path: /etc/apt/apt.conf.d/95proxy
+    state: absent
+  when: not (proxy_enabled | bool)
+
+- name: Remove env proxy block when disabled
+  ansible.builtin.blockinfile:
+    path: /etc/environment
+    marker: "# {mark} ANSIBLE MANAGED PROXY"
+    state: absent
+  when: not (proxy_enabled | bool)

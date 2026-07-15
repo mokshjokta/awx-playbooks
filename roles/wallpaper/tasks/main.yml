@@ -1,0 +1,51 @@
+---
+- name: Ensure dconf tooling is present
+  ansible.builtin.apt:
+    name: [dconf-cli, dconf-gsettings-backend]
+    state: present
+    update_cache: true
+
+- name: Ensure system dconf directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /etc/dconf/db/local.d
+    - /etc/dconf/db/local.d/locks
+    - /etc/dconf/profile
+    - /usr/share/backgrounds/{{ company_short }}
+
+- name: Deploy company dconf profile
+  ansible.builtin.copy:
+    dest: /etc/dconf/profile/user
+    content: |
+      user-db:user
+      system-db:local
+    mode: "0644"
+  notify: dconf update
+
+- name: Copy wallpaper image
+  ansible.builtin.copy:
+    src: "{{ wallpaper_source | basename }}"
+    dest: "/usr/share/backgrounds/{{ company_short }}/wallpaper.png"
+    mode: "0644"
+  notify: dconf update
+
+- name: Configure wallpaper keyfile
+  ansible.builtin.template:
+    src: 00-wallpaper.j2
+    dest: /etc/dconf/db/local.d/00-wallpaper
+    mode: "0644"
+  notify: dconf update
+
+- name: Lock wallpaper keys (disable change)
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/local.d/locks/00-wallpaper
+    content: |
+      /org/gnome/desktop/background/picture-uri
+      /org/gnome/desktop/background/picture-uri-dark
+      /org/gnome/desktop/background/picture-options
+    mode: "0644"
+  when: desktop_lock_wallpaper | default(true)
+  notify: dconf update

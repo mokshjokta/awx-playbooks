@@ -1,0 +1,10 @@
+---
+# Collect machine facts, evaluate compliance and report back.
+- name: Compliance reporting
+  hosts: workstations
+  become: true
+  roles:
+    - logging
+    - monitoring
+    - backup
+    - compliance

@@ -1,0 +1,20 @@
+---
+- name: Install CUPS client
+  ansible.builtin.apt:
+    name: [cups-client]
+    state: present
+    update_cache: true
+
+- name: Configure default print server
+  ansible.builtin.copy:
+    dest: /etc/cups/client.conf
+    content: |
+      ServerName {{ print_server | default('print.corp.softage.local') }}
+    mode: "0644"
+  when: print_server is defined or true
+
+- name: Add network printers
+  ansible.builtin.command: >
+    lpadmin -p "{{ item.name }}" -E -v "{{ item.uri }}" -m everywhere
+  loop: "{{ printers | default([]) }}"
+  changed_when: true

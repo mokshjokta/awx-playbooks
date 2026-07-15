@@ -1,0 +1,17 @@
+---
+- name: Grant admin group sudo (validated)
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/10-softage-admins
+    content: |
+      # Managed by Ansible
+      %{{ sudo_admin_group }} ALL=(ALL:ALL) ALL
+      Defaults logfile="/var/log/sudo.log"
+      Defaults timestamp_timeout=5
+    mode: "0440"
+    validate: "/usr/sbin/visudo -cf %s"
+
+- name: Disable root login (lock account)
+  ansible.builtin.user:
+    name: root
+    password_lock: true
+  when: disable_root_login | bool

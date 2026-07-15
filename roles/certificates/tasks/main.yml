@@ -1,0 +1,15 @@
+---
+- name: Ensure company CA directory exists
+  ansible.builtin.file:
+    path: "/usr/local/share/ca-certificates/{{ company_short }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy internal CA certificates
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/usr/local/share/ca-certificates/{{ company_short }}/{{ item | basename }}"
+    mode: "0644"
+  with_fileglob:
+    - "files/*.crt"
+  notify: update ca certificates

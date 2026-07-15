@@ -1,0 +1,12 @@
+---
+# Desktop policy enforcement (GNOME via system dconf database + locks).
+- name: Enforce desktop policies
+  hosts: workstations
+  become: true
+  roles:
+    - wallpaper
+    - lockscreen
+    - idle-lock
+    - firefox
+    - chrome
+    - edge

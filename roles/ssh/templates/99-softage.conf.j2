@@ -1,0 +1,13 @@
+# Managed by Ansible - do not edit by hand
+PermitRootLogin {{ ssh_permit_root_login }}
+PasswordAuthentication {{ ssh_password_auth }}
+PubkeyAuthentication yes
+X11Forwarding no
+MaxAuthTries 4
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LoginGraceTime 30
+AllowGroups {{ ssh_allow_groups }}
+{% if ssh_banner_enabled %}
+Banner /etc/issue.net
+{% endif %}

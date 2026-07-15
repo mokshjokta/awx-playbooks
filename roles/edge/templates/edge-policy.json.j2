@@ -1,0 +1,18 @@
+{
+  "HomepageLocation": "{{ browser_homepage }}",
+  "RestoreOnStartup": 4,
+  "RestoreOnStartupURLs": ["{{ browser_homepage }}"],
+  "InPrivateModeAvailability": {{ 1 if browser_disable_private else 0 }},
+  "DeveloperToolsAvailability": {{ 2 if browser_disable_devtools else 0 }},
+  "PasswordManagerEnabled": {{ (not browser_disable_password_save) | lower }},
+  "URLBlocklist": [
+{% for u in browser_blocked_urls %}
+    "{{ u }}"{{ "," if not loop.last else "" }}
+{% endfor %}
+  ],
+  "URLAllowlist": [
+{% for u in browser_allowed_urls %}
+    "{{ u }}"{{ "," if not loop.last else "" }}
+{% endfor %}
+  ]
+}

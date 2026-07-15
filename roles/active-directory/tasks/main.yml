@@ -1,0 +1,57 @@
+---
+- name: Install realmd / sssd / kerberos packages
+  ansible.builtin.apt:
+    name:
+      - realmd
+      - sssd
+      - sssd-tools
+      - adcli
+      - samba-common-bin
+      - krb5-user
+      - packagekit
+      - oddjob
+      - oddjob-mkhomedir
+    state: present
+    update_cache: true
+
+- name: Check current domain membership
+  ansible.builtin.command: realm list
+  register: realm_status
+  changed_when: false
+
+- name: Join Active Directory domain
+  ansible.builtin.expect:
+    command: >
+      realm join --user={{ ad_join_user }}
+      --computer-ou="{{ ad_computer_ou }}"
+      {{ ad_domain }}
+    responses:
+      "Password for .*:": "{{ ad_join_password }}"
+  no_log: true
+  when: ad_domain not in realm_status.stdout
+  register: realm_join
+
+- name: Deploy sssd.conf
+  ansible.builtin.template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: "0600"
+  notify: restart sssd
+
+- name: Enable automatic home directory creation
+  ansible.builtin.command: pam-auth-update --enable mkhomedir
+  changed_when: false
+
+- name: Restrict logon to AD admin group + local
+  ansible.builtin.command: >
+    realm permit -g {{ ad_admin_group }}@{{ ad_domain }}
+  when: ad_domain not in realm_status.stdout
+  changed_when: true
+
+- name: Enable and start SSSD
+  ansible.builtin.systemd:
+    name: sssd
+    state: started
+    enabled: true

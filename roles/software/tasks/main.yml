@@ -1,0 +1,37 @@
+---
+# Install allowed software. Names are mapped to their real install method
+# (apt package or snap) via the software_map variable.
+- name: Install allowed apt software
+  ansible.builtin.apt:
+    name: "{{ software_apt_packages }}"
+    state: present
+    update_cache: true
+  when: software_apt_packages | length > 0
+
+- name: Install allowed snap software
+  community.general.snap:
+    name: "{{ item }}"
+    state: present
+    classic: "{{ item in software_snap_classic }}"
+  loop: "{{ software_snap_packages }}"
+  when: software_snap_packages | length > 0
+
+- name: Remove blocked apt software (auto uninstall)
+  ansible.builtin.apt:
+    name: "{{ blocked_software }}"
+    state: absent
+    purge: true
+
+- name: Remove blocked snap software (auto uninstall)
+  community.general.snap:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ blocked_software }}"
+  failed_when: false
+
+- name: Hold blocked packages so they cannot be reinstalled
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop: "{{ blocked_software }}"
+  failed_when: false

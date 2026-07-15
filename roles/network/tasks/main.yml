@@ -1,0 +1,9 @@
+---
+# Netplan is the default on Ubuntu 22/24. This role only manages a company
+# drop-in and leaves the primary interface config to the installer/DHCP.
+- name: Deploy company netplan drop-in (DNS search + NTP hints)
+  ansible.builtin.template:
+    src: 99-softage.yaml.j2
+    dest: /etc/netplan/99-softage.yaml
+    mode: "0600"
+  notify: netplan apply

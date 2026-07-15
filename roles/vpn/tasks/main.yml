@@ -1,0 +1,22 @@
+---
+- name: Install OpenVPN + WireGuard clients
+  ansible.builtin.apt:
+    name: [openvpn, wireguard, network-manager-openvpn-gnome]
+    state: present
+    update_cache: true
+
+- name: Deploy WireGuard config (if provided)
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/wireguard/{{ item | basename }}"
+    mode: "0600"
+  with_fileglob:
+    - "files/*.conf"
+
+- name: Enable WireGuard tunnels
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ item | basename | splitext | first }}"
+    enabled: "{{ vpn_autostart | default(false) }}"
+  with_fileglob:
+    - "files/*.conf"
+  failed_when: false

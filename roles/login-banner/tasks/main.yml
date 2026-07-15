@@ -1,0 +1,10 @@
+---
+- name: Deploy console login banner
+  ansible.builtin.copy:
+    content: "{{ login_banner_text }}"
+    dest: "{{ item }}"
+    mode: "0644"
+  loop:
+    - /etc/issue
+    - /etc/issue.net
+    - /etc/motd

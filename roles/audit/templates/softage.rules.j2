@@ -1,0 +1,10 @@
+## Managed by Ansible
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/sudoers -p wa -k scope
+-w /etc/sudoers.d/ -p wa -k scope
+-w /var/log/sudo.log -p wa -k actions
+-w /etc/ssh/sshd_config -p wa -k sshd
+-a always,exit -F arch=b64 -S execve -F euid=0 -k rootcmd
+-w /usr/bin/passwd -p x -k passwd_change

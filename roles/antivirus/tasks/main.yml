@@ -1,0 +1,26 @@
+---
+- name: Install ClamAV
+  ansible.builtin.apt:
+    name: [clamav, clamav-daemon]
+    state: present
+    update_cache: true
+
+- name: Enable freshclam updates
+  ansible.builtin.systemd:
+    name: clamav-freshclam
+    state: started
+    enabled: true
+  when: antivirus_freshclam | bool
+
+- name: Enable clamav daemon
+  ansible.builtin.systemd:
+    name: clamav-daemon
+    state: started
+    enabled: true
+
+- name: Schedule daily scan of home directories
+  ansible.builtin.cron:
+    name: "clamav daily scan"
+    hour: "1"
+    minute: "30"
+    job: "clamscan -r /home --infected --log=/var/log/clamav/daily-scan.log"

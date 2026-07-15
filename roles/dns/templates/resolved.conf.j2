@@ -1,0 +1,5 @@
+[Resolve]
+DNS={{ dns_servers | join(' ') }}
+Domains={{ dns_search | join(' ') }}
+DNSSEC=allow-downgrade
+Cache=yes

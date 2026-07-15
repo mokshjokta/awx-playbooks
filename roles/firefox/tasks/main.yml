@@ -1,0 +1,21 @@
+---
+- name: Ensure Firefox policy directory exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /etc/firefox/policies
+    - /usr/lib/firefox/distribution     # snap builds also read this location
+
+- name: Deploy Firefox enterprise policies.json
+  ansible.builtin.template:
+    src: policies.json.j2
+    dest: /etc/firefox/policies/policies.json
+    mode: "0644"
+
+- name: Mirror policy for snap/deb layout
+  ansible.builtin.template:
+    src: policies.json.j2
+    dest: /usr/lib/firefox/distribution/policies.json
+    mode: "0644"

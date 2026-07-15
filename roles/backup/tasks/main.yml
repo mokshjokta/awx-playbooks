@@ -1,0 +1,19 @@
+---
+- name: Ensure backup destination exists
+  ansible.builtin.file:
+    path: "{{ backup_dest }}"
+    state: directory
+    mode: "0700"
+
+- name: Deploy backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: /usr/local/sbin/softage-backup.sh
+    mode: "0750"
+
+- name: Schedule nightly config backup
+  ansible.builtin.cron:
+    name: "softage config backup"
+    hour: "{{ backup_cron_hour }}"
+    minute: "{{ backup_cron_minute }}"
+    job: "/usr/local/sbin/softage-backup.sh"

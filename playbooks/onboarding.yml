@@ -1,0 +1,34 @@
+---
+# Full first-run provisioning of a new workstation.
+- name: Onboard workstation
+  hosts: workstations
+  become: true
+  roles:
+    - network
+    - dns
+    - proxy
+    - time
+    - certificates
+    - active-directory     # join domain + configure SSSD
+    - password-policy
+    - login-banner
+    - ssh
+    - sudo
+    - firewall
+    - usb
+    - bluetooth
+    - antivirus
+    - audit
+    - logging
+    - packages
+    - software
+    - updates
+    - wallpaper
+    - lockscreen
+    - idle-lock
+    - firefox
+    - chrome
+    - edge
+    - monitoring
+    - backup
+    - compliance

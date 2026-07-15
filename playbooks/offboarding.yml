@@ -1,0 +1,59 @@
+---
+# Decommission / retire a workstation and clean company config.
+- name: Offboard workstation
+  hosts: workstations
+  become: true
+  vars:
+    offboard_confirm: false     # set to true (extra var in AWX) to actually run destructive tasks
+  tasks:
+    - name: Safety check
+      ansible.builtin.assert:
+        that:
+          - offboard_confirm | bool
+        fail_msg: "Refusing to run offboarding. Pass -e offboard_confirm=true to proceed."
+
+    - name: Back up user data and configs before wipe
+      ansible.builtin.include_role:
+        name: backup
+
+    - name: Leave the Active Directory domain
+      ansible.builtin.command: realm leave "{{ ad_domain }}"
+      register: realm_leave
+      failed_when: realm_leave.rc != 0 and 'Not joined' not in realm_leave.stderr
+      changed_when: realm_leave.rc == 0
+
+    - name: Stop and disable SSSD
+      ansible.builtin.systemd:
+        name: sssd
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Remove company CA certificates
+      ansible.builtin.file:
+        path: "/usr/local/share/ca-certificates/{{ company_short }}"
+        state: absent
+      notify: update ca certs offboard
+
+    - name: Remove company dconf policy database
+      ansible.builtin.file:
+        path: "/etc/dconf/db/local.d"
+        state: absent
+
+    - name: Remove browser managed policies
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/firefox/policies
+        - /etc/opt/chrome/policies
+        - /etc/opt/edge/policies
+
+    - name: Refresh dconf
+      ansible.builtin.command: dconf update
+      changed_when: true
+
+  handlers:
+    - name: update ca certs offboard
+      ansible.builtin.command: update-ca-certificates --fresh
+      changed_when: true

@@ -1,0 +1,6 @@
+# Managed by Ansible - forward all logs to central collector
+{% if remote_syslog_protocol == 'tcp' %}
+*.* @@{{ remote_syslog_host }}:{{ remote_syslog_port }}
+{% else %}
+*.* @{{ remote_syslog_host }}:{{ remote_syslog_port }}
+{% endif %}

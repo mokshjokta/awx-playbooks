@@ -1,0 +1,14 @@
+---
+# Map friendly names -> install method. Adjust to match your environment.
+# apt packages:
+software_apt_packages:
+  - firefox
+  - libreoffice
+# snaps (many enterprise apps ship as snaps on Ubuntu):
+software_snap_packages:
+  - code
+  - teams-for-linux
+  - zoom-client
+# snaps that require --classic:
+software_snap_classic:
+  - code

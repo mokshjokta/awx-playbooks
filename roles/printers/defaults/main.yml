@@ -1,0 +1,6 @@
+---
+print_server: "print.corp.softage.local"
+printers: []
+# Example:
+# printers:
+#   - {name: "HR-Printer", uri: "ipp://print.corp.softage.local/printers/HR"}
