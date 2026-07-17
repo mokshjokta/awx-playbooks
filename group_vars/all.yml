@@ -1,0 +1,148 @@
+---
+# =====================================================================
+# Company-wide variables. Override per-environment or per-department by
+# creating group_vars files under the matching inventory/group name.
+# Secrets (passwords, join accounts) should live in an Ansible Vault file.
+# =====================================================================
+
+company_name: "SoftAge"
+company_short: "softage"
+
+# ---- Desktop -------------------------------------------------------
+wallpaper_source: "files/wallpaper.png"          # place image in roles/wallpaper/files
+lockscreen_source: "files/lockscreen.png"
+company_logo_source: "files/logo.png"
+desktop_theme: "Adwaita-dark"
+desktop_dark_mode: true
+desktop_font: "Ubuntu 11"
+dock_favorites:
+  - "firefox.desktop"
+  - "code.desktop"
+  - "org.gnome.Nautilus.desktop"
+  - "org.gnome.Terminal.desktop"
+
+# ---- Security ------------------------------------------------------
+password_min_len: 12
+password_max_days: 90
+password_min_days: 1
+password_warn_days: 7
+password_min_classes: 3          # upper/lower/digit/other required
+idle_lock_seconds: 300           # 5 minutes
+auto_logout_seconds: 900         # 15 minutes
+block_usb_storage: true
+block_bluetooth: true
+disable_camera: false
+disable_microphone: false
+disable_root_login: true
+
+# ---- SSH -----------------------------------------------------------
+ssh_permit_root_login: "no"
+ssh_password_auth: "no"
+ssh_allow_groups: "domain-admins linux-admins"
+ssh_banner_enabled: true
+
+# ---- Sudo ----------------------------------------------------------
+sudo_admin_group: "linux-admins"
+
+# ---- Software ------------------------------------------------------
+allowed_software:
+  - firefox
+  - code
+  - teams
+  - zoom
+  - libreoffice
+blocked_software:
+  - steam
+  - discord
+  - telegram
+  - transmission          # uTorrent has no native linux client; transmission/qbittorrent common
+  - qbittorrent
+
+# ---- Updates -------------------------------------------------------
+updates_automatic: true
+updates_security_only: false
+updates_auto_reboot: true
+updates_reboot_time: "03:30"
+updates_include_kernel: true
+
+# ---- Network / DNS / Proxy / NTP ----------------------------------
+dns_servers:
+  - "10.0.0.1"
+  - "10.0.0.2"
+dns_search:
+  - "corp.softage.local"
+proxy_enabled: false
+proxy_http: "http://proxy.corp.softage.local:3128"
+proxy_https: "http://proxy.corp.softage.local:3128"
+proxy_no_proxy: "localhost,127.0.0.1,.corp.softage.local"
+ntp_servers:
+  - "10.0.0.1"
+  - "pool.ntp.org"
+
+# ---- Active Directory ---------------------------------------------
+ad_domain: "corp.softage.local"
+ad_realm: "CORP.SOFTAGE.LOCAL"
+ad_ou: "OU=Workstations,DC=corp,DC=softage,DC=local"
+ad_admin_group: "domain-admins"
+ad_computer_ou: "OU=Linux,OU=Workstations,DC=corp,DC=softage,DC=local"
+ad_create_home: true
+ad_home_template: "/home/%u@%d"
+ad_default_shell: "/bin/bash"
+# ad_join_user / ad_join_password -> put in vault (see README)
+
+# ---- Firefox / Chrome / Edge --------------------------------------
+browser_homepage: "https://intranet.corp.softage.local"
+browser_disable_private: true
+browser_disable_devtools: true
+browser_disable_password_save: true
+browser_bookmarks:
+  - name: "Intranet"
+    url: "https://intranet.corp.softage.local"
+  - name: "Helpdesk"
+    url: "https://helpdesk.corp.softage.local"
+browser_blocked_urls:
+  - "facebook.com"
+  - "*.tiktok.com"
+browser_allowed_urls: []
+
+# ---- Login banner --------------------------------------------------
+login_banner_text: |
+  ============================================================
+  {{ company_name }} - Authorized use only.
+  This system is monitored. Unauthorized access is prohibited
+  and may be subject to disciplinary and/or legal action.
+  ============================================================
+
+# ---- Firewall ------------------------------------------------------
+firewall_default_incoming: "deny"
+firewall_default_outgoing: "allow"
+firewall_allowed_tcp:
+  - 22
+
+# ---- Logging -------------------------------------------------------
+remote_syslog_enabled: true
+remote_syslog_host: "10.0.0.20"
+remote_syslog_port: 514
+remote_syslog_protocol: "udp"
+
+# ---- Backup --------------------------------------------------------
+backup_dest: "/var/backups/softage"
+backup_paths:
+  - /etc/ssh
+  - /usr/local/share/ca-certificates
+  - /etc/crontab
+  - /etc/cron.d
+backup_cron_hour: "2"
+backup_cron_minute: "0"
+
+# ---- Compliance / reporting ---------------------------------------
+compliance_report_dir: "/var/log/softage-compliance"
+compliance_report_endpoint: ""    # optional HTTP endpoint to POST reports to
+
+# ---- Antivirus -----------------------------------------------------
+antivirus_package: "clamav"
+antivirus_freshclam: true
+
+# ---- Monitoring ----------------------------------------------------
+monitoring_node_exporter: true
+monitoring_node_exporter_version: "1.8.2"
