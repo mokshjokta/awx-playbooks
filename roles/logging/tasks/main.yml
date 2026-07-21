@@ -5,6 +5,14 @@
     state: present
     update_cache: true
 
+- name: Ensure journald drop-in dir
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Configure persistent journald
   ansible.builtin.copy:
     dest: /etc/systemd/journald.conf.d/softage.conf
@@ -12,14 +20,10 @@
       [Journal]
       Storage=persistent
       SystemMaxUse=500M
+    owner: root
+    group: root
     mode: "0644"
   notify: restart journald
-
-- name: Ensure journald drop-in dir
-  ansible.builtin.file:
-    path: /etc/systemd/journald.conf.d
-    state: directory
-    mode: "0755"
 
 - name: Configure remote syslog forwarding
   ansible.builtin.template:
