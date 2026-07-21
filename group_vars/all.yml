@@ -67,10 +67,10 @@ updates_include_kernel: true
 
 # ---- Network / DNS / Proxy / NTP ----------------------------------
 dns_servers:
-  - "10.0.0.1"
-  - "10.0.0.2"
+  - "172.29.30.142"
+  - "8.8.8.8"
 dns_search:
-  - "corp.softage.local"
+  - "softageindia.com"
 proxy_enabled: false
 proxy_http: "http://proxy.corp.softage.local:3128"
 proxy_https: "http://proxy.corp.softage.local:3128"
