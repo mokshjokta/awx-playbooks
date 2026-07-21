@@ -3,13 +3,27 @@
 - name: Onboard workstation
   hosts: workstations
   become: true
+
+  pre_tasks:
+    - name: Show company_name
+      ansible.builtin.debug:
+        var: company_name
+
+    - name: Show dns_servers
+      ansible.builtin.debug:
+        var: dns_servers
+
+    - name: Show dns_search
+      ansible.builtin.debug:
+        var: dns_search
+
   roles:
     - network
     - dns
     - proxy
     - time
     - certificates
-    - active-directory     # join domain + configure SSSD
+    - active-directory
     - password-policy
     - login-banner
     - ssh
