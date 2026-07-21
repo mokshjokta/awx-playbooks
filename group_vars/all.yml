@@ -80,15 +80,19 @@ ntp_servers:
   - "pool.ntp.org"
 
 # ---- Active Directory ---------------------------------------------
-ad_domain: "corp.softage.local"
-ad_realm: "CORP.SOFTAGE.LOCAL"
-ad_ou: "OU=Workstations,DC=corp,DC=softage,DC=local"
-ad_admin_group: "domain-admins"
-ad_computer_ou: "OU=Linux,OU=Workstations,DC=corp,DC=softage,DC=local"
+ad_domain: "softageindia.com"
+ad_realm: "SOFTAGEINDIA.COM"
+
+ad_admin_group: "Domain Admins"
+
+ad_computer_ou: "OU=Desktop,OU=IT,OU=Softage_Corp,DC=softageindia,DC=com"
+
 ad_create_home: true
 ad_home_template: "/home/%u@%d"
 ad_default_shell: "/bin/bash"
-# ad_join_user / ad_join_password -> put in vault (see README)
+
+ad_join_user: "itsupport"
+# ad_join_password -> AWX Template Variables
 
 # ---- Firefox / Chrome / Edge --------------------------------------
 browser_homepage: "https://intranet.corp.softage.local"
