@@ -1,13 +1,17 @@
 ---
-- name: Configure systemd-resolved
-  ansible.builtin.template:
-    src: resolved.conf.j2
-    dest: /etc/systemd/resolved.conf.d/softage.conf
-    mode: "0644"
-  notify: restart resolved
-
 - name: Ensure resolved drop-in dir exists
   ansible.builtin.file:
     path: /etc/systemd/resolved.conf.d
     state: directory
+    owner: root
+    group: root
     mode: "0755"
+
+- name: Configure systemd-resolved
+  ansible.builtin.template:
+    src: resolved.conf.j2
+    dest: /etc/systemd/resolved.conf.d/softage.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart resolved
