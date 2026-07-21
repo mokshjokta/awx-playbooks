@@ -19,10 +19,17 @@
   register: realm_status
   changed_when: false
 
+- name: Discover Active Directory domain
+  ansible.builtin.command: realm discover {{ ad_domain }}
+  register: realm_discover
+  changed_when: false
+
 - name: Join Active Directory domain
   ansible.builtin.expect:
     command: >
-      realm join --user={{ ad_join_user }}
+      realm join
+      --verbose
+      --user={{ ad_join_user }}
       --computer-ou="{{ ad_computer_ou }}"
       {{ ad_domain }}
     responses:
@@ -44,9 +51,9 @@
   ansible.builtin.command: pam-auth-update --enable mkhomedir
   changed_when: false
 
-- name: Restrict logon to AD admin group + local
+- name: Restrict logon to AD admin group
   ansible.builtin.command: >
-    realm permit -g {{ ad_admin_group }}@{{ ad_domain }}
+    realm permit -g "{{ ad_admin_group }}"
   when: ad_domain not in realm_status.stdout
   changed_when: true
 
