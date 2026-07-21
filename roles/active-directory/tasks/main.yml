@@ -34,7 +34,6 @@
       {{ ad_domain }}
     responses:
       "Password for .*:": "{{ ad_join_password }}"
-  no_log: true
   when: ad_domain not in realm_status.stdout
   register: realm_join
 
